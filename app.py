@@ -89,7 +89,7 @@ def main():
 
     metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
 
-    if st.sidebar.button("Classify", key='classify'):
+    if st.sidebar.button("Classify", key='classify_svm'):
         st.subheader("Support Vector Machine (SVM) results")
         
         if auto:
@@ -138,7 +138,7 @@ def main():
 
     metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
 
-    if st.sidebar.button("Classify", key='classify'):
+    if st.sidebar.button("Classify", key='classify_lr'):
         st.subheader("Logistic Regression Results")
         
         if auto:
@@ -169,21 +169,21 @@ def main():
     ############### Step 5 Train a Random Forest Classifier ##########
     if classifier == 'Random Forest':
         st.sidebar.subheader("Model Hyperparameters")
-        
+
         # ปุ่ม auto
         auto = st.sidebar.checkbox("Auto Tune Hyperparameters", key='auto_rf')
-    
+
         if auto:
             st.sidebar.write("Auto tuning will override manual inputs.")
         else:
             n_estimators = st.sidebar.number_input("The number of trees in the forest", 100, 5000, step=10, key='n_estimators')
             max_depth = st.sidebar.number_input("The maximum depth of the tree", 1, 20, step=1, key='max_depth')
-    
+
         metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
-    
-        if st.sidebar.button("Classify", key='classify'):
+
+        if st.sidebar.button("Classify", key='classify_rf'):
             st.subheader("Random Forest Results")
-            
+
             if auto:
                 # กำหนดช่วงของค่า hyperparameters ที่ต้องการค้นหา
                 param_grid = {
@@ -199,12 +199,12 @@ def main():
             else:
                 model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=0)
                 model.fit(x_train, y_train)
-    
+
             accuracy = model.score(x_test, y_test)
             y_pred = model.predict(x_test)
             precision = precision_score(y_test, y_pred).round(2)
             recall = recall_score(y_test, y_pred).round(2)
-            
+
             st.write("Accuracy: ", round(accuracy, 2))
             st.write("Precision: ", precision)
             st.write("Recall: ", recall)
