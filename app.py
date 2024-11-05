@@ -10,7 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_score, recall_score 
 from sklearn.metrics import ConfusionMatrixDisplay, RocCurveDisplay, PrecisionRecallDisplay
-
+from sklearn.model_selection import GridSearchCV
 def main():
     ################ Step 1 Create Web Title #####################
 
@@ -74,32 +74,54 @@ def main():
 
      ############### Step 3 Train a SVM Classifier ##########
 
-    if classifier == 'Support Vectore Machine (SVM)':
+    if classifier == 'Support Vector Machine (SVM)':
         st.sidebar.subheader("Model Hyperparameters")
+    
+    # ปุ่ม auto
+    auto = st.sidebar.checkbox("Auto Tune Hyperparameters", key='auto_svm')
+
+    if auto:
+        st.sidebar.write("Auto tuning will override manual inputs.")
+    else:
         C = st.sidebar.number_input("C (Regularization parameter)", 0.01, 10.0, step=0.01, key='C')
         kernel = st.sidebar.radio("Kernel", ("rbf", "linear"), key='kernel')
         gamma  = st.sidebar.radio("Gamma (Kernel Coefficient)", ("scale", "auto"), key='gamma')
 
-        metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
+    metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
 
-        if st.sidebar.button("Classify", key='classify'):
-            st.subheader("Supper Vector Machine (SVM) results")
+    if st.sidebar.button("Classify", key='classify'):
+        st.subheader("Support Vector Machine (SVM) results")
+        
+        if auto:
+            # กำหนดช่วงของค่า hyperparameters ที่ต้องการค้นหา
+            param_grid = {
+                'C': [0.1, 1, 10],
+                'kernel': ['linear', 'rbf'],
+                'gamma': ['scale', 'auto']
+            }
+            model = SVC()
+            # ใช้ GridSearchCV เพื่อหาค่า hyperparameters ที่ดีที่สุด
+            grid_search = GridSearchCV(model, param_grid, cv=5)
+            grid_search.fit(x_train, y_train)
+            # ใช้ค่าที่ดีที่สุดที่ค้นพบจาก GridSearchCV
+            best_params = grid_search.best_params_
+            model = grid_search.best_estimator_
+            st.write("Best Hyperparameters: ", best_params)
+        else:
+            # ใช้ค่า hyperparameters ที่ผู้ใช้เลือก
             model = SVC(C=C, kernel=kernel, gamma=gamma)
-            model.fit(x_train,y_train)
-            accuracy = model.score(x_test, y_test)
-            y_pred   = model.predict(x_test)
+            model.fit(x_train, y_train)
 
-            precision = precision_score(y_test, y_pred).round(2)
-            recall = recall_score(y_test, y_pred).round(2)
-            
-            st.write("Accuracy: ", round(accuracy, 2))
-            st.write("Precision: ", precision)
-            st.write("Recall: ", recall)
-            plot_metrics(metrics)
+        accuracy = model.score(x_test, y_test)
+        y_pred   = model.predict(x_test)
 
+        precision = precision_score(y_test, y_pred).round(2)
+        recall = recall_score(y_test, y_pred).round(2)
 
-    
-
+        st.write("Accuracy: ", round(accuracy, 2))
+        st.write("Precision: ", precision)
+        st.write("Recall: ", recall)
+        plot_metrics(metrics)
      ############### Step 4 Training a Logistic Regression Classifier ##########
      # Start you Code here #
     if classifier == 'Logistic Regression':
