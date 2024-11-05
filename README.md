@@ -36,3 +36,10 @@ Use the sidebar to select a classifier, adjust parameters, and view model perfor
 ### Citations
 1. Mushroom [Dataset]. (1981). UCI Machine Learning Repository. https://doi.org/10.24432/C5959T.
 2. Build a Machine Learning Web App with Streamlit and Python. Coursera Project Network.
+
+### Conclusion
+Both SVM and Random Forest perform exceptionally well, with Accuracy, Precision, and Recall metrics being very close:
+
+SVM and Random Forest: Accuracy 0.99, Precision 1.0, Recall 0.98
+Logistic Regression performs slightly worse across all metrics.
+Given that both Random Forest and SVM demonstrate excellent prediction capabilities (Precision 1.0 and Recall 0.98), either model could be a solid choice for implementation. The final decision may depend on additional factors such as training speed and prediction time.
