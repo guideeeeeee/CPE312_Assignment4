@@ -88,13 +88,20 @@ def main():
             model.fit(x_train,y_train)
             accuracy = model.score(x_test, y_test)
             y_pred   = model.predict(x_test)
-
             precision = precision_score(y_test, y_pred).round(2)
             recall = recall_score(y_test, y_pred).round(2)
-            
+
+            accuracy_train = model.score(x_train, y_train)
+            y_pred_train   = model.predict(x_train)
+            precision_train = precision_score(y_train, y_pred_train).round(2)
+            recall_train = recall_score(y_train, y_pred_train).round(2)
+
             st.write("Accuracy: ", round(accuracy, 2))
             st.write("Precision: ", precision)
             st.write("Recall: ", recall)
+            st.write("Accuracy_train: ", round(accuracy_train, 2))
+            st.write("Precision_train: ", precision_train)
+            st.write("Recall_train: ", recall_train)
             plot_metrics(metrics)
 
 
