@@ -126,35 +126,80 @@ def main():
      # Start you Code here #
     if classifier == 'Logistic Regression':
         st.sidebar.subheader("Model Hyperparameters")
-        C = st.sidebar.number_input("C (Regularization parameter)", 0.01, 10.0, step=0.01, key='C_LR')
-        max_iter = st.sidebar.slider("Maximum number of iterations", 100, 500, key='max_iter')
-        metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
+    
+        # ปุ่ม auto
+        auto = st.sidebar.checkbox("Auto Tune Hyperparameters", key='auto_lr')
 
-        if st.sidebar.button("Classify", key='classify'):
-            st.subheader("Logistic Regression Results")
+        if auto:
+            st.sidebar.write("Auto tuning will override manual inputs.")
+        else:
+            C = st.sidebar.number_input("C (Regularization parameter)", 0.01, 10.0, step=0.01, key='C_LR')
+            max_iter = st.sidebar.slider("Maximum number of iterations", 100, 500, key='max_iter')
+
+    metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
+
+    if st.sidebar.button("Classify", key='classify'):
+        st.subheader("Logistic Regression Results")
+        
+        if auto:
+            # กำหนดช่วงของค่า hyperparameters ที่ต้องการค้นหา
+            param_grid = {
+                'C': [0.1, 1, 10],
+                'max_iter': [100, 200, 300]
+            }
+            model = LogisticRegression()
+            grid_search = GridSearchCV(model, param_grid, cv=5)
+            grid_search.fit(x_train, y_train)
+            best_params = grid_search.best_params_
+            model = grid_search.best_estimator_
+            st.write("Best Hyperparameters: ", best_params)
+        else:
             model = LogisticRegression(C=C, max_iter=max_iter)
             model.fit(x_train, y_train)
-            accuracy = model.score(x_test, y_test)
-            y_pred = model.predict(x_test)
-            precision = precision_score(y_test, y_pred).round(2)
-            recall = recall_score(y_test, y_pred).round(2)
-            
-            st.write("Accuracy: ", round(accuracy, 2))
-            st.write("Precision: ", precision)
-            st.write("Recall: ", recall)
-            plot_metrics(metrics)
 
+        accuracy = model.score(x_test, y_test)
+        y_pred = model.predict(x_test)
+        precision = precision_score(y_test, y_pred).round(2)
+        recall = recall_score(y_test, y_pred).round(2)
+        
+        st.write("Accuracy: ", round(accuracy, 2))
+        st.write("Precision: ", precision)
+        st.write("Recall: ", recall)
+        plot_metrics(metrics)
     ############### Step 5 Train a Random Forest Classifier ##########
     if classifier == 'Random Forest':
         st.sidebar.subheader("Model Hyperparameters")
-        n_estimators = st.sidebar.number_input("The number of trees in the forest", 100, 5000, step=10, key='n_estimators')
-        max_depth = st.sidebar.number_input("The maximum depth of the tree", 1, 20, step=1, key='max_depth')
+        
+        # ปุ่ม auto
+        auto = st.sidebar.checkbox("Auto Tune Hyperparameters", key='auto_rf')
+    
+        if auto:
+            st.sidebar.write("Auto tuning will override manual inputs.")
+        else:
+            n_estimators = st.sidebar.number_input("The number of trees in the forest", 100, 5000, step=10, key='n_estimators')
+            max_depth = st.sidebar.number_input("The maximum depth of the tree", 1, 20, step=1, key='max_depth')
+    
         metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
-
+    
         if st.sidebar.button("Classify", key='classify'):
             st.subheader("Random Forest Results")
-            model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=0)
-            model.fit(x_train, y_train)
+            
+            if auto:
+                # กำหนดช่วงของค่า hyperparameters ที่ต้องการค้นหา
+                param_grid = {
+                    'n_estimators': [100, 200, 300],
+                    'max_depth': [5, 10, 20]
+                }
+                model = RandomForestClassifier(random_state=0)
+                grid_search = GridSearchCV(model, param_grid, cv=5)
+                grid_search.fit(x_train, y_train)
+                best_params = grid_search.best_params_
+                model = grid_search.best_estimator_
+                st.write("Best Hyperparameters: ", best_params)
+            else:
+                model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=0)
+                model.fit(x_train, y_train)
+    
             accuracy = model.score(x_test, y_test)
             y_pred = model.predict(x_test)
             precision = precision_score(y_test, y_pred).round(2)
@@ -165,10 +210,6 @@ def main():
             st.write("Recall: ", recall)
             plot_metrics(metrics)
 
-    if st.sidebar.checkbox("Show raw data", False):
-        st.subheader("Mushroom Dataset")
-        st.write(df)
-    
     
     
 
